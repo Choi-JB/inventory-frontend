@@ -1,0 +1,99 @@
+/**
+ * 화면/훅에서 쓰는 API 타입 모음.
+ *
+ * `api.ts`는 `npm run gen:api`로 백엔드 스펙(/v3/api-docs)에서 자동 생성 — 직접 수정 금지.
+ * 생성 시 `--properties-required-by-default`로 응답 필드를 전부 필수로 만들었는데,
+ * springdoc은 실제로 null이 오는 필드를 표시하지 못하므로 여기서 `| null`로 보정한다.
+ * (백엔드 엔티티의 @Column(nullable = true) 기준 — 백엔드 DTO가 바뀌면 같이 확인할 것)
+ * 자세한 배경과 백엔드 변경 시 체크리스트: 문서/재고관리_챗봇_프론트엔드설계서.md 8장
+ */
+import type { components, operations } from "./api";
+
+type Schemas = components["schemas"];
+
+/** 지정한 필드만 `| null`로 바꾼다 */
+type WithNullable<T, K extends keyof T> = Omit<T, K> & { [P in K]: T[P] | null };
+
+// ---- 공통 ----
+
+/** 백엔드 공통 에러 응답 (GlobalExceptionHandler) — 스펙에 없어서 직접 정의 */
+export type ErrorResponse = {
+  code: string;
+  message: string;
+  timestamp: string;
+};
+
+/** 페이징 응답 공통 형태 (백엔드 PageResponse<T>) */
+export type Page<T> = {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+};
+
+// ---- 인증 ----
+
+export type Role = "ADMIN" | "STAFF";
+
+/** GET /api/auth/me — 백엔드가 role을 String으로 내려서 스펙엔 string이라 좁혀둠 */
+export type UserInfo = Omit<Schemas["UserInfo"], "role"> & { role: Role };
+
+// ---- 카테고리 ----
+
+export type Category = WithNullable<Schemas["CategoryResponse"], "description" | "parentId">;
+
+/** GET /api/categories — 재귀 구조라 children까지 보정된 타입으로 다시 정의 */
+export type CategoryTree = Omit<Schemas["CategoryTreeResponse"], "description" | "children"> & {
+  description: string | null;
+  children: CategoryTree[];
+};
+
+export type CategoryCreateRequest = Schemas["CategoryCreateRequest"];
+export type CategoryUpdateRequest = Schemas["CategoryUpdateRequest"];
+
+// ---- 상품 ----
+
+export type Product = Schemas["ProductResponse"];
+export type Unit = Product["unit"];
+
+export type ProductCreateRequest = Schemas["ProductCreateRequest"];
+export type ProductUpdateRequest = Schemas["ProductUpdateRequest"];
+
+/** GET /api/products 쿼리 (keyword, categoryId, lowStockOnly, page, size, sort) */
+export type ProductSearchParams = NonNullable<operations["getProducts"]["parameters"]["query"]>;
+
+// ---- 재고 거래 ----
+
+export type StockTransaction = WithNullable<
+  Schemas["StockTransactionResponse"],
+  | "unitPrice"
+  | "costPriceSnapshot"
+  | "reason"
+  | "reversalOfId"
+  | "canceledBy"
+  | "canceledAt"
+  | "consumeType"
+>;
+export type TransactionType = StockTransaction["type"];
+export type TransactionStatus = StockTransaction["status"];
+export type ConsumeType = NonNullable<StockTransaction["consumeType"]>;
+
+export type StockInRequest = Schemas["StockInRequest"];
+export type StockOutRequest = Schemas["StockOutRequest"];
+export type StockConsumeRequest = Schemas["StockConsumeRequest"];
+export type StockAdjustmentRequest = Schemas["StockAdjustmentRequest"];
+export type RollbackRequest = Schemas["RollbackRequest"];
+
+/** GET /api/stock/transactions 쿼리 (productId, type, status, startDate, endDate, page, size, sort) */
+export type TransactionSearchParams = NonNullable<
+  operations["getTransactions"]["parameters"]["query"]
+>;
+
+// ---- 손익 ----
+
+export type ProfitLoss = Schemas["ProfitLossResponse"];
+export type ProfitLossByProduct = Schemas["ByProduct"];
+
+/** GET /api/stock/profit-loss 쿼리 (startDate, endDate 필수, productId 선택) */
+export type ProfitLossParams = operations["getProfitLoss"]["parameters"]["query"];
