@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Providers } from "./providers";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -20,8 +21,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      {/* TODO(직접): TanStack Query의 QueryClientProvider를 여기서 감싸기 (클라이언트 컴포넌트로 분리 필요) */}
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {/*  TanStack Query Provider 컴포넌트 사용 */}
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
