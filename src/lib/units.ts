@@ -4,8 +4,9 @@
  * - 화면에서만 kg/L로 보여주고, 전송 직전 최소 단위로 되돌림
  */
 
-/** 백엔드 Product.unit — openapi-typescript 생성 타입이 생기면 그걸로 교체 */
-export type Unit = "EA" | "G" | "ML";
+import type { Unit } from "@/types";
+
+export type { Unit };
 
 /** 폼에서 고를 수 있는 입력 단위 */
 export type InputUnit = "개" | "g" | "kg" | "ml" | "L";
