@@ -47,7 +47,7 @@ export function Providers({ children }: { children: ReactNode }) {
   // QueryClientProvider로 children 감싸기 (+ devtools: ReactQueryDevtools)
   return (
     <QueryClientProvider client={getQueryClient()}>
-      {children} 
+      {children}
       <ReactQueryDevtools />
     </QueryClientProvider>
   );

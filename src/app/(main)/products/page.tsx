@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/page-header";
 import { Placeholder } from "@/components/layout/placeholder";
+import { AdminOnly } from "@/components/auth/admin-only";
 
 export default function ProductsPage() {
   return (
@@ -11,11 +12,13 @@ export default function ProductsPage() {
         title="상품"
         description="상품 검색 및 재고 현황"
         actions={
-          // TODO(직접): ADMIN에게만 노출
-          <Link href="/products/new" className={buttonVariants()}>
-            <Plus />
-            상품 등록
-          </Link>
+          // ADMIN에게만 노출
+          <AdminOnly>
+            <Link href="/products/new" className={buttonVariants()}>
+              <Plus />
+              상품 등록
+            </Link>
+          </AdminOnly>
         }
       />
       <Placeholder

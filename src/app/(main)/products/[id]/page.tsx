@@ -3,6 +3,7 @@ import { Pencil } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/page-header";
 import { Placeholder } from "@/components/layout/placeholder";
+import { AdminOnly } from "@/components/auth/admin-only";
 
 export default async function ProductDetailPage({ params }: PageProps<"/products/[id]">) {
   const { id } = await params;
@@ -12,11 +13,13 @@ export default async function ProductDetailPage({ params }: PageProps<"/products
       <PageHeader
         title={`상품 상세 #${id}`}
         actions={
-          // TODO(직접): ADMIN에게만 노출 + 삭제 버튼(409 DELETE_CONFLICT 메시지 표시)
-          <Link href={`/products/${id}/edit`} className={buttonVariants({ variant: "outline" })}>
-            <Pencil />
-            수정
-          </Link>
+          // TODO: 삭제 버튼(409 DELETE_CONFLICT 메시지 표시)
+          <AdminOnly>
+            <Link href={`/products/${id}/edit`} className={buttonVariants({ variant: "outline" })}>
+              <Pencil />
+              수정
+            </Link>
+          </AdminOnly>
         }
       />
       <Placeholder
