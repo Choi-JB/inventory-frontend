@@ -75,11 +75,7 @@ export function CategoryTree({ tree, canEdit, onAddChild, onEdit, onDelete }: Ca
               )}
             </div>
 
-            {hasChildren ? (
-              <Badge variant="secondary">하위 {node.children.length}</Badge>
-            ) : (
-              <Badge variant="outline">말단</Badge>
-            )}
+            {hasChildren && <Badge variant="secondary">하위 {node.children.length}</Badge>}
 
             {canEdit && (
               <div className="flex shrink-0 gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
