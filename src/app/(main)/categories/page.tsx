@@ -81,7 +81,7 @@ export default function CategoriesPage() {
     <>
       <PageHeader
         title="카테고리"
-        description="상품은 하위 카테고리가 없는 '말단' 카테고리에만 등록할 수 있습니다."
+        description="상위 카테고리를 선택하면 하위 카테고리의 상품까지 함께 조회됩니다."
         actions={
           <AdminOnly>
             <Button onClick={() => setFormTarget({ mode: "create", parent: null })}>

@@ -12,7 +12,7 @@ export default async function ProductEditPage({ params }: PageProps<"/products/[
         todo={[
           "수정 가능: name, sellingPrice, minStockLevel, categoryId",
           "sku·unit·costPrice·currentStock은 읽기 전용 표시",
-          "카테고리 변경 시에도 말단만 선택 가능",
+          "카테고리 변경: CategoryTreeSelect (기존 상품을 하위 카테고리로 재분류할 때 사용)",
         ]}
       />
     </>

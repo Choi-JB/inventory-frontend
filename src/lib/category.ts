@@ -10,18 +10,13 @@ export type FlatCategory = {
   depth: number;
   /** "전자제품 > 케이블류" 형태의 전체 경로 */
   path: string;
-  /** 하위 카테고리가 없음 = 상품을 등록할 수 있는 카테고리 */
-  isLeaf: boolean;
 };
 
 /** 트리를 위에서부터 순서대로 한 줄 목록으로 펼침 (select 옵션 등에 사용) */
 export function flattenTree(tree: CategoryTree[], depth = 0, parentPath = ""): FlatCategory[] {
   return tree.flatMap((node) => {
     const path = parentPath ? `${parentPath} > ${node.name}` : node.name;
-    return [
-      { node, depth, path, isLeaf: node.children.length === 0 },
-      ...flattenTree(node.children, depth + 1, path),
-    ];
+    return [{ node, depth, path }, ...flattenTree(node.children, depth + 1, path)];
   });
 }
 

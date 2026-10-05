@@ -171,7 +171,7 @@ export interface paths {
     put?: never;
     /**
      * 상품 등록
-     * @description ADMIN 전용. 말단 카테고리에만 등록 가능하며, costPrice와 currentStock은 0으로 초기화됩니다(입고로만 증가).
+     * @description ADMIN 전용. costPrice와 currentStock은 0으로 초기화됩니다(입고로만 증가).
      */
     post: operations["createProduct"];
     delete?: never;

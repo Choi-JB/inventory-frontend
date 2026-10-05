@@ -9,11 +9,6 @@ type CategoryTreeSelectProps = {
   tree: CategoryTree[];
   value: number | null;
   onChange: (id: number | null) => void;
-  /**
-   * true: 말단만 선택 가능, 상위는 비활성 그룹 제목으로 표시 (상품 등록·수정)
-   * false: 전부 선택 가능 (상품 목록 필터 — 상위 선택 시 하위 상품까지 포함)
-   */
-  leafOnly?: boolean;
   /** 맨 위 "선택 안 함" 항목 문구 (예: "전체 카테고리", "카테고리 선택") */
   placeholder?: string;
   id?: string;
@@ -23,14 +18,14 @@ type CategoryTreeSelectProps = {
 };
 
 /**
- * 카테고리 트리 선택 (설계서 6.5) — 상품 화면에서 사용
- * 네이티브 select라 키보드·모바일 지원이 기본으로 되고, 옵션 비활성화(disabled)로 말단만 고르게 할 수 있음
+ * 카테고리 트리 선택 (설계서 6.5) — 상품 목록 필터, 상품 등록·수정에서 사용
+ * 어느 레벨이든 선택 가능 (목록 필터에서 상위를 고르면 하위 카테고리 상품까지 포함)
+ * 네이티브 select라 키보드·모바일 지원이 기본으로 됨
  */
 export function CategoryTreeSelect({
   tree,
   value,
   onChange,
-  leafOnly = false,
   placeholder = "카테고리 선택",
   className,
   ...rest
@@ -48,8 +43,8 @@ export function CategoryTreeSelect({
       )}
     >
       <option value="">{placeholder}</option>
-      {options.map(({ node, depth, isLeaf }) => (
-        <option key={node.id} value={node.id} disabled={leafOnly && !isLeaf}>
+      {options.map(({ node, depth }) => (
+        <option key={node.id} value={node.id}>
           {/* select 옵션엔 스타일을 못 줘서 줄바꿈 없는 공백으로 들여쓰기 */}
           {"   ".repeat(depth)}
           {node.name}
