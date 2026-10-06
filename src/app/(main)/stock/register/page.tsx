@@ -1,26 +1,19 @@
+import { Suspense } from "react";
 import { PageHeader } from "@/components/layout/page-header";
-import { Placeholder } from "@/components/layout/placeholder";
+import { StockRegisterView } from "./stock-register-view";
 
+/**
+ * 입고·출고·자체소비 등록 (ADMIN + STAFF)
+ * 안쪽 화면이 URL 쿼리(?productId=)를 읽기 때문에 Suspense로 감쌈
+ * (Next.js: useSearchParams를 쓰는 클라이언트 컴포넌트는 Suspense 경계 안에 두도록 권장)
+ */
 export default function StockRegisterPage() {
   return (
     <>
-      <PageHeader title="입고·출고·소비" description="ADMIN + STAFF" />
-      <Placeholder
-        api={[
-          "POST /api/stock/in",
-          "POST /api/stock/out",
-          "POST /api/stock/consume",
-          "GET /api/products",
-        ]}
-        todo={[
-          "탭: 입고 / 출고 / 자체소비",
-          "공통: 상품 선택, 수량(입력 단위 선택 → toBaseQuantity, 정수 검증), reason",
-          "입고: unitPrice(매입단가, kg/L/개당 입력 → toBasePrice)",
-          "출고: unitPrice 선택 입력 (비우면 백엔드가 sellingPrice 적용)",
-          "소비: consumeType(DISCARD/INTERNAL_USE/SAMPLE)",
-          "409 INSUFFICIENT_STOCK 메시지를 폼에 표시",
-        ]}
-      />
+      <PageHeader title="입고·출고·소비" description="상품을 고르고 재고 변동을 등록합니다." />
+      <Suspense fallback={<p className="text-sm text-muted-foreground">불러오는 중...</p>}>
+        <StockRegisterView />
+      </Suspense>
     </>
   );
 }
