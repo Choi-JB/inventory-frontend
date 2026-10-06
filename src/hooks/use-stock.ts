@@ -11,6 +11,7 @@ import type {
   StockTransaction,
   StockAdjustmentRequest,
 } from "@/types";
+import { TRANSACTIONS_QUERY_KEY } from "./use-transactions";
 
 /** POST /api/stock/in - 입고 */
 export function useStockIn() {
@@ -18,7 +19,10 @@ export function useStockIn() {
   return useMutation({
     mutationFn: (body: StockInRequest) =>
       apiFetch<StockTransaction>("/api/stock/in", { method: "POST", body }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: TRANSACTIONS_QUERY_KEY });
+    },
   });
 }
 
@@ -28,7 +32,10 @@ export function useStockOut() {
   return useMutation({
     mutationFn: (body: StockOutRequest) =>
       apiFetch<StockTransaction>("/api/stock/out", { method: "POST", body }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: TRANSACTIONS_QUERY_KEY });
+    },
   });
 }
 
@@ -38,7 +45,10 @@ export function useStockConsume() {
   return useMutation({
     mutationFn: (body: StockConsumeRequest) =>
       apiFetch<StockTransaction>("/api/stock/consume", { method: "POST", body }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: TRANSACTIONS_QUERY_KEY });
+    },
   });
 }
 
@@ -48,6 +58,9 @@ export function useStockAdjustment() {
   return useMutation({
     mutationFn: (body: StockAdjustmentRequest) =>
       apiFetch<StockTransaction>("/api/stock/adjustment", { method: "POST", body }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: TRANSACTIONS_QUERY_KEY });
+    },
   });
 }

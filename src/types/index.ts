@@ -83,7 +83,12 @@ export type StockInRequest = Schemas["StockInRequest"];
 export type StockOutRequest = Schemas["StockOutRequest"];
 export type StockConsumeRequest = Schemas["StockConsumeRequest"];
 export type StockAdjustmentRequest = Schemas["StockAdjustmentRequest"];
-export type RollbackRequest = Schemas["RollbackRequest"];
+/**
+ * POST /api/stock/transactions/{id}/rollback — 사유는 선택 (API 명세서 5장)
+ * 백엔드 DTO에 검증 어노테이션이 없어 스펙에 required 목록이 없고,
+ * --properties-required-by-default 때문에 reason이 필수로 생성됨 → 선택으로 보정
+ */
+export type RollbackRequest = Partial<Schemas["RollbackRequest"]>;
 
 /** GET /api/stock/transactions 쿼리 (productId, type, status, startDate, endDate, page, size, sort) */
 export type TransactionSearchParams = NonNullable<
