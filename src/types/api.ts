@@ -395,6 +395,9 @@ export interface components {
       createdAt: string;
       /** @enum {string} */
       consumeType: "DISCARD" | "INTERNAL_USE" | "SAMPLE";
+      productName: string;
+      /** @enum {string} */
+      productUnit: "EA" | "G" | "ML";
     };
     StockOutRequest: {
       /** Format: int64 */

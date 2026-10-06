@@ -71,7 +71,6 @@ export function StockAdjustmentView() {
       reason: values.reason,
     };
     stockAdjustment.mutate(body, { onSuccess });
-    void values;
   };
 
   // 메뉴는 AdminOnly로 숨겼지만 주소 직접 입력 대비 (실제 차단은 백엔드 403)
