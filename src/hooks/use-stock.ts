@@ -9,6 +9,7 @@ import type {
   StockOutRequest,
   StockConsumeRequest,
   StockTransaction,
+  StockAdjustmentRequest,
 } from "@/types";
 
 /** POST /api/stock/in - 입고 */
@@ -37,6 +38,16 @@ export function useStockConsume() {
   return useMutation({
     mutationFn: (body: StockConsumeRequest) =>
       apiFetch<StockTransaction>("/api/stock/consume", { method: "POST", body }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY }),
+  });
+}
+
+/** PUT /api/stock/adjustment - 재고 조정  */
+export function useStockAdjustment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: StockAdjustmentRequest) =>
+      apiFetch<StockTransaction>("/api/stock/adjustment", { method: "POST", body }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY }),
   });
 }

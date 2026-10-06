@@ -1,19 +1,21 @@
+import { Suspense } from "react";
 import { PageHeader } from "@/components/layout/page-header";
-import { Placeholder } from "@/components/layout/placeholder";
+import { StockAdjustmentView } from "./stock-adjustment-view";
 
+/**
+ * 재고조정 (ADMIN 전용)
+ * 안쪽 화면이 URL 쿼리(?productId=)를 읽기 때문에 Suspense로 감쌈 — 입고·출고 화면과 같은 구조
+ */
 export default function StockAdjustmentPage() {
   return (
     <>
-      <PageHeader title="재고조정" description="ADMIN 전용 — 실사 수량으로 현재 재고를 보정" />
-      <Placeholder
-        api={["POST /api/stock/adjustment (ADMIN)", "GET /api/products/{id}"]}
-        todo={[
-          "상품 선택 → 현재 시스템 재고 표시",
-          "실사 수량(actualQuantity) 입력 → 차이(±) 미리보기",
-          "reason 필수",
-          "손익 계산 대상 아님 / 롤백 불가 안내 문구",
-        ]}
+      <PageHeader
+        title="재고조정"
+        description="실제로 세어 본 수량(실사 수량)으로 시스템 재고를 맞춥니다."
       />
+      <Suspense fallback={<p className="text-sm text-muted-foreground">불러오는 중...</p>}>
+        <StockAdjustmentView />
+      </Suspense>
     </>
   );
 }
