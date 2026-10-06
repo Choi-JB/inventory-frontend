@@ -3,9 +3,15 @@
  * @param params 검색·필터·페이징 조건
  * @returns {QueryResult<Page<Product>>} 상품 목록 데이터
  */
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useMutation, keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api-client";
-import type { Page, Product, ProductSearchParams } from "@/types";
+import type {
+  Page,
+  Product,
+  ProductCreateRequest,
+  ProductUpdateRequest,
+  ProductSearchParams,
+} from "@/types";
 
 /** 상품 관련 캐시 전체를 가리키는 키 — 나중에 등록·수정 후 invalidateQueries에 사용 */
 export const PRODUCTS_QUERY_KEY = ["products"] as const;
@@ -29,5 +35,38 @@ export function useProduct(id: number) {
     queryFn: () => apiFetch<Product>(`/api/products/${id}`, { method: "GET" }),
     // id가 숫자가 아니면(/products/abc) 요청하지 않음 → Number.isInteger(id)
     enabled: Number.isInteger(id),
+  });
+}
+
+/** POST /api/products — 응답: 생성된 Product */
+export function useCreateProduct() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: ProductCreateRequest) =>
+      apiFetch<Product>("/api/products", { method: "POST", body: body }),
+    /* onSuccess: PRODUCTS_QUERY_KEY 무효화 */
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY }),
+  });
+}
+
+/** PUT /api/products/{id} — { id, body } 묶어서 받기 (useUpdateCategory와 같은 구조) */
+export function useUpdateProduct() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: number; body: ProductUpdateRequest }) =>
+      apiFetch<Product>(`/api/products/${id}`, { method: "PUT", body: body }),
+    /* onSuccess: PRODUCTS_QUERY_KEY 무효화 → 목록·상세 둘 다 갱신 */
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY }),
+  });
+}
+
+/** DELETE /api/products/{id} */
+export function useDeleteProduct() {
+  // onSuccess: [...PRODUCTS_QUERY_KEY, "list"]만 무효화
+  const queryClient = useQueryClient();
+  return useMutation({
+    /* apiFetch DELETE, 응답 타입 void */
+    mutationFn: (id: number) => apiFetch<void>(`/api/products/${id}`, { method: "DELETE" }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [...PRODUCTS_QUERY_KEY, "list"] }),
   });
 }
