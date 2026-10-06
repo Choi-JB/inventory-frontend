@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { cn } from "cn";
+import { NativeSelect } from "@/components/common/native-select";
 import { flattenTree } from "@/lib/category";
 import type { CategoryTree } from "@/types";
 
@@ -15,32 +15,28 @@ type CategoryTreeSelectProps = {
   disabled?: boolean;
   className?: string;
   "aria-invalid"?: boolean;
+  "aria-label"?: string;
 };
 
 /**
  * 카테고리 트리 선택 (설계서 6.5) — 상품 목록 필터, 상품 등록·수정에서 사용
  * 어느 레벨이든 선택 가능 (목록 필터에서 상위를 고르면 하위 카테고리 상품까지 포함)
- * 네이티브 select라 키보드·모바일 지원이 기본으로 됨
+ * value/onChange로 값을 주고받는 "제어 컴포넌트"라서 react-hook-form에선 Controller로 연결
  */
 export function CategoryTreeSelect({
   tree,
   value,
   onChange,
   placeholder = "카테고리 선택",
-  className,
   ...rest
 }: CategoryTreeSelectProps) {
   const options = useMemo(() => flattenTree(tree), [tree]);
 
   return (
-    <select
+    <NativeSelect
       {...rest}
       value={value ?? ""}
       onChange={(e) => onChange(e.target.value === "" ? null : Number(e.target.value))}
-      className={cn(
-        "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:bg-input/30",
-        className,
-      )}
     >
       <option value="">{placeholder}</option>
       {options.map(({ node, depth }) => (
@@ -50,6 +46,6 @@ export function CategoryTreeSelect({
           {node.name}
         </option>
       ))}
-    </select>
+    </NativeSelect>
   );
 }

@@ -63,7 +63,25 @@ export function toBasePrice(displayPrice: number, unit: Unit): number {
   return Math.round((displayPrice / PRICE_FACTOR[unit]) * 100) / 100;
 }
 
-/** 백엔드 최소 단위당 가격을 화면 가격(kg/L/개당)으로 환산 */
+/**
+ * 백엔드 최소 단위당 가격을 화면 가격(kg/L/개당)으로 환산
+ * 15.56 * 1000 = 15560.000000000002 같은 부동소수점 꼬리를 없애려고 소수점 둘째 자리로 반올림
+ */
 export function toDisplayPrice(basePrice: number, unit: Unit): number {
-  return basePrice * PRICE_FACTOR[unit];
+  return Math.round(basePrice * PRICE_FACTOR[unit] * 100) / 100;
+}
+
+/**
+ * 최소 단위 수량을 폼 입력용 (값, 입력 단위)로 환산 — 수정 폼의 기본값 채우기용
+ * 1000으로 나누어떨어지면 큰 단위(5000g → 5kg), 아니면 최소 단위 그대로(1500g → 1500g)
+ */
+export function toDisplayQuantity(
+  baseQuantity: number,
+  unit: Unit,
+): { value: number; inputUnit: InputUnit } {
+  const [baseUnit, largeUnit] = INPUT_UNITS[unit];
+  if (largeUnit && baseQuantity !== 0 && baseQuantity % FACTOR[largeUnit] === 0) {
+    return { value: baseQuantity / FACTOR[largeUnit], inputUnit: largeUnit };
+  }
+  return { value: baseQuantity, inputUnit: baseUnit };
 }
