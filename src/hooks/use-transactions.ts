@@ -3,7 +3,14 @@
  */
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api-client";
-import type { Page, StockTransaction, TransactionSearchParams, RollbackRequest } from "@/types";
+import type {
+  Page,
+  StockTransaction,
+  TransactionSearchParams,
+  RollbackRequest,
+  ProfitLossParams,
+  ProfitLoss,
+} from "@/types";
 import { PRODUCTS_QUERY_KEY } from "./use-products";
 
 /** 거래 관련 캐시 전체를 가리키는 키 — 나중에 등록·수정 후 invalidateQueries에 사용 */
@@ -42,5 +49,15 @@ export function useRollback() {
       queryClient.invalidateQueries({ queryKey: TRANSACTIONS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEY });
     },
+  });
+}
+
+/** GET /api/stock/profit-loss - 손익 조회 */
+export function useProfitLoss(params: ProfitLossParams | null) {
+  return useQuery({
+    queryKey: [...TRANSACTIONS_QUERY_KEY, "profit-loss", params],
+    queryFn: () => apiFetch<ProfitLoss>("/api/stock/profit-loss", { query: params! }),
+    enabled: params !== null, //기간이 올바르지 않으면 요청 안 함
+    placeholderData: keepPreviousData,
   });
 }

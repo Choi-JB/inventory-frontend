@@ -25,8 +25,53 @@ export function toDayRangeParams(startDay: string, endDay: string) {
   };
 }
 
+/** Date → "yyyy-MM-dd" (로컬 기준 — toISOString()은 UTC라 자정 무렵 하루가 밀림) */
+export function toDayString(date: Date): string {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
 /** 오늘 날짜 "yyyy-MM-dd" (로컬 기준) — 날짜 입력 기본값용 */
 export function todayString(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  return toDayString(new Date());
 }
+
+export type DayRange = { startDay: string; endDay: string };
+
+/**
+ * 기간 빠른 선택 (손익 화면)
+ * new Date(년, 월, 일)은 로컬 시간 기준이고, 일에 0을 넣으면 "지난달 마지막 날"이 됨
+ */
+export const DAY_RANGE_PRESETS: { label: string; range: () => DayRange }[] = [
+  {
+    label: "오늘",
+    range: () => ({ startDay: todayString(), endDay: todayString() }),
+  },
+  {
+    label: "최근 7일",
+    range: () => {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+      return { startDay: toDayString(start), endDay: toDayString(now) };
+    },
+  },
+  {
+    label: "이번 달",
+    range: () => {
+      const now = new Date();
+      return {
+        startDay: toDayString(new Date(now.getFullYear(), now.getMonth(), 1)),
+        endDay: toDayString(now),
+      };
+    },
+  },
+  {
+    label: "지난달",
+    range: () => {
+      const now = new Date();
+      return {
+        startDay: toDayString(new Date(now.getFullYear(), now.getMonth() - 1, 1)),
+        endDay: toDayString(new Date(now.getFullYear(), now.getMonth(), 0)),
+      };
+    },
+  },
+];

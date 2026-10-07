@@ -12,6 +12,7 @@ import type {
   ProductUpdateRequest,
   ProductSearchParams,
 } from "@/types";
+import { operations } from "@/types/api";
 
 /** 상품 관련 캐시 전체를 가리키는 키 — 나중에 등록·수정 후 invalidateQueries에 사용 */
 export const PRODUCTS_QUERY_KEY = ["products"] as const;
@@ -68,5 +69,17 @@ export function useDeleteProduct() {
     /* apiFetch DELETE, 응답 타입 void */
     mutationFn: (id: number) => apiFetch<void>(`/api/products/${id}`, { method: "DELETE" }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [...PRODUCTS_QUERY_KEY, "list"] }),
+  });
+}
+
+type LowStockParams = NonNullable<operations["getLowStockProducts"]["parameters"]["query"]>;
+
+/** GET /api/stock/low-stock — 재고 부족 목록 조회 */
+export function useLowStockProducts(params: LowStockParams) {
+  return useQuery({
+    queryKey: [...PRODUCTS_QUERY_KEY, "low-stock", params],
+    queryFn: () =>
+      apiFetch<Page<Product>>("/api/stock/low-stock", { method: "GET", query: params }),
+    placeholderData: keepPreviousData,
   });
 }

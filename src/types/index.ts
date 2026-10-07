@@ -96,9 +96,8 @@ export type TransactionSearchParams = NonNullable<
 >;
 
 // ---- 손익 ----
-
-export type ProfitLoss = Schemas["ProfitLossResponse"];
 export type ProfitLossByProduct = Schemas["ByProduct"];
+export type ProfitLoss = Schemas["ProfitLossResponse"];
 
 /** GET /api/stock/profit-loss 쿼리 (startDate, endDate 필수, productId 선택) */
 export type ProfitLossParams = operations["getProfitLoss"]["parameters"]["query"];

@@ -3,8 +3,9 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PackageSearch } from "lucide-react";
+import { PackagePlus, PackageSearch } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -22,13 +23,19 @@ type ProductTableProps = {
   products: Product[];
   /** 카테고리 id → "전자제품 > 케이블류" 경로 표시용 */
   tree: CategoryTree[];
+  /**
+   * "low-stock": 재고 부족 화면용 — 가격 열 대신 부족량과 "입고" 바로가기 열 표시
+   * (기본값 "default": 상품 목록 화면)
+   */
+  variant?: "default" | "low-stock";
 };
 
 /**
  * 상품 목록 표 — 데이터는 props로만 받음
  * 수량은 kg/L 환산(formatQuantity), 가격은 kg/L/개당(formatUnitPrice)으로 표시 (설계서 6.1~6.3)
  */
-export function ProductTable({ products, tree }: ProductTableProps) {
+export function ProductTable({ products, tree, variant = "default" }: ProductTableProps) {
+  const isLowStockView = variant === "low-stock";
   const router = useRouter();
 
   // 카테고리 id → 경로 문자열 (트리가 바뀔 때만 다시 계산)
@@ -55,8 +62,17 @@ export function ProductTable({ products, tree }: ProductTableProps) {
             <TableHead>카테고리</TableHead>
             <TableHead className="text-right">현재 재고</TableHead>
             <TableHead className="text-right">최소 재고</TableHead>
-            <TableHead className="text-right">판매가</TableHead>
-            <TableHead className="text-right">매입가(평균)</TableHead>
+            {isLowStockView ? (
+              <>
+                <TableHead className="text-right">부족량</TableHead>
+                <TableHead className="w-0" />
+              </>
+            ) : (
+              <>
+                <TableHead className="text-right">판매가</TableHead>
+                <TableHead className="text-right">매입가(평균)</TableHead>
+              </>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -95,12 +111,35 @@ export function ProductTable({ products, tree }: ProductTableProps) {
                 <TableCell className="text-right text-muted-foreground tabular-nums">
                   {formatQuantity(product.minStockLevel, product.unit)}
                 </TableCell>
-                <TableCell className="text-right tabular-nums">
-                  {formatUnitPrice(product.sellingPrice, product.unit)}
-                </TableCell>
-                <TableCell className="text-right text-muted-foreground tabular-nums">
-                  {formatUnitPrice(product.costPrice, product.unit)}
-                </TableCell>
+                {isLowStockView ? (
+                  <>
+                    <TableCell className="text-right tabular-nums">
+                      {/* 최소 재고까지 모자란 양. 딱 기준치면(0) 아직 모자라진 않지만 부족 판정(<=)이라 목록에 나옴 */}
+                      {product.minStockLevel > product.currentStock
+                        ? formatQuantity(product.minStockLevel - product.currentStock, product.unit)
+                        : "기준치"}
+                    </TableCell>
+                    <TableCell>
+                      <Link
+                        href={`/stock/register?productId=${product.id}`}
+                        className={buttonVariants({ variant: "outline", size: "sm" })}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <PackagePlus />
+                        입고
+                      </Link>
+                    </TableCell>
+                  </>
+                ) : (
+                  <>
+                    <TableCell className="text-right tabular-nums">
+                      {formatUnitPrice(product.sellingPrice, product.unit)}
+                    </TableCell>
+                    <TableCell className="text-right text-muted-foreground tabular-nums">
+                      {formatUnitPrice(product.costPrice, product.unit)}
+                    </TableCell>
+                  </>
+                )}
               </TableRow>
             );
           })}

@@ -465,12 +465,14 @@ export interface components {
       productName: string;
       profit: number;
       loss: number;
+      net: number;
     };
     ProfitLossResponse: {
       totalRevenue: number;
       totalCost: number;
       totalProfit: number;
       consumeLoss: number;
+      netProfit: number;
       byProduct: components["schemas"]["ByProduct"][];
     };
     PageResponseProductResponse: {
