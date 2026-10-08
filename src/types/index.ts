@@ -101,3 +101,19 @@ export type ProfitLoss = Schemas["ProfitLossResponse"];
 
 /** GET /api/stock/profit-loss 쿼리 (startDate, endDate 필수, productId 선택) */
 export type ProfitLossParams = operations["getProfitLoss"]["parameters"]["query"];
+
+// ---- 챗봇 ----
+
+/** 이전 대화 한 건 — 백엔드는 role을 String으로 받아 스펙엔 string이라 허용값으로 좁힘 (그 외는 400) */
+export type ChatHistoryMessage = Omit<Schemas["ChatHistoryMessage"], "role"> & {
+  role: "user" | "assistant";
+};
+
+/** POST /api/chat 요청 — 서버는 대화를 저장하지 않으므로 이전 대화를 history로 보냄 */
+export type ChatRequest = Omit<Schemas["ChatRequest"], "history"> & {
+  history?: ChatHistoryMessage[];
+};
+
+export type ChatResponse = Schemas["ChatResponse"];
+/** 이번 질문으로 검색된 관련 매뉴얼 조각 (답변에 실제로 쓰였는지는 알 수 없음 — "출처"가 아님) */
+export type ChatSource = Schemas["Source"];

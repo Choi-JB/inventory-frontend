@@ -13,7 +13,8 @@ export default function MainLayout({ children }: LayoutProps<"/">) {
     <AuthGuard>
       <div className="flex h-screen">
         <AppSidebar />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        {/* min-w-0: 챗봇 패널이 열리면 본문이 좁아져야 하는데, flex 자식은 기본적으로 내용 너비 아래로 안 줄어듦 */}
+        <main className="min-w-0 flex-1 overflow-y-auto p-6">{children}</main>
         <ChatPanel />
       </div>
     </AuthGuard>

@@ -180,6 +180,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/chat": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * 챗봇 채팅
+     * @description ADMIN 또는 STAFF 전용. 채팅 기능을 제공합니다.
+     */
+    post: operations["chat"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/categories": {
     parameters: {
       query?: never;
@@ -218,6 +238,26 @@ export interface paths {
      * @description accessToken 쿠키를 만료시켜 브라우저가 삭제하도록 합니다.
      */
     post: operations["logout"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/admin/manuals/reindex": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * 매뉴얼 재적재
+     * @description ADMIN 전용. 매뉴얼 재적재
+     */
+    post: operations["reindex"];
     delete?: never;
     options?: never;
     head?: never;
@@ -441,6 +481,22 @@ export interface components {
       sellingPrice: number;
       /** Format: int32 */
       minStockLevel?: number;
+    };
+    ChatHistoryMessage: {
+      role: string;
+      content: string;
+    };
+    ChatRequest: {
+      message: string;
+      history?: components["schemas"]["ChatHistoryMessage"][];
+    };
+    ChatResponse: {
+      answer: string;
+      sources: components["schemas"]["Source"][];
+    };
+    Source: {
+      source: string;
+      section: string;
     };
     CategoryCreateRequest: {
       name: string;
@@ -798,6 +854,30 @@ export interface operations {
       };
     };
   };
+  chat: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ChatRequest"];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "*/*": components["schemas"]["ChatResponse"];
+        };
+      };
+    };
+  };
   getCategoryTree: {
     parameters: {
       query?: never;
@@ -857,6 +937,26 @@ export interface operations {
           [name: string]: unknown;
         };
         content?: never;
+      };
+    };
+  };
+  reindex: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "*/*": number;
+        };
       };
     };
   };
