@@ -414,8 +414,7 @@ export interface components {
       id: number;
       /** Format: int64 */
       productId: number;
-      /** Format: int64 */
-      userId: number;
+      userName: string;
       /** @enum {string} */
       type: "IN" | "OUT" | "CONSUME" | "ADJUSTMENT";
       /** @enum {string} */
@@ -427,8 +426,7 @@ export interface components {
       reason: string;
       /** Format: int64 */
       reversalOfId: number;
-      /** Format: int64 */
-      canceledBy: number;
+      canceledByName: string;
       /** Format: date-time */
       canceledAt: string;
       /** Format: date-time */
