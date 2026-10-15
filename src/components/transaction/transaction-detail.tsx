@@ -67,11 +67,11 @@ export function TransactionDetail({ tx }: { tx: StockTransaction }) {
           )}
           <Field label="사유">{tx.reason ?? "-"}</Field>
           <Field label="등록">
-            {formatDateTime(tx.createdAt)} · 사용자 #{tx.userId}
+            {formatDateTime(tx.createdAt)} · # {tx.userName}
           </Field>
           {tx.status === "CANCELED" && (
             <Field label="취소">
-              {formatDateTime(tx.canceledAt)} · 사용자 #{tx.canceledBy}
+              {formatDateTime(tx.canceledAt)} · # {tx.canceledByName}
             </Field>
           )}
         </dl>
