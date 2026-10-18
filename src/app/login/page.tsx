@@ -1,20 +1,39 @@
+"use client";
+
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Boxes } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { LoginForm } from "@/components/auth/login-form";
 
-// 구글 로그인은 fetch가 아니라 페이지 이동 (설계서 4장)
-const GOOGLE_LOGIN_URL = `${process.env.NEXT_PUBLIC_API_URL}/oauth2/authorization/google`;
+function LoginContent() {
+  const searchParams = useSearchParams();
+  const signupSuccess = searchParams.get("signup") === "1";
 
-export default function LoginPage() {
   return (
     <div className="flex flex-1 items-center justify-center bg-muted/30 p-6">
-      <div className="w-full max-w-sm rounded-xl border bg-background p-8 text-center shadow-sm">
-        <Boxes className="mx-auto mb-4 size-10" />
-        <h1 className="text-xl font-semibold">재고관리</h1>
-        <p className="mt-1 mb-6 text-sm text-muted-foreground">구글 계정으로 로그인해 주세요.</p>
-        <a href={GOOGLE_LOGIN_URL} className={buttonVariants({ size: "lg", className: "w-full" })}>
-          Google로 로그인
-        </a>
+      <div className="w-full max-w-sm rounded-xl border bg-background p-8 shadow-sm">
+        <div className="mb-6 text-center">
+          <Boxes className="mx-auto mb-4 size-10" />
+          <h1 className="text-xl font-semibold">재고관리</h1>
+          <p className="mt-1 text-sm text-muted-foreground">이메일 또는 Google로 로그인해 주세요.</p>
+        </div>
+        <LoginForm signupSuccess={signupSuccess} />
       </div>
     </div>
+  );
+}
+
+/** useSearchParams는 Suspense 경계 필요 (거래 이력·재고 화면과 동일) */
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-1 items-center justify-center bg-muted/30 p-6">
+          <p className="text-sm text-muted-foreground">불러오는 중...</p>
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }

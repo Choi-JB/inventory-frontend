@@ -224,6 +224,46 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/auth/signup": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * 회원가입
+     * @description 이메일과 비밀번호로 회원가입합니다.
+     */
+    post: operations["signUp"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/refresh": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * 토큰 갱신
+     * @description refreshToken을 사용하여 accessToken을 갱신합니다.
+     */
+    post: operations["refresh"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/auth/logout": {
     parameters: {
       query?: never;
@@ -238,6 +278,26 @@ export interface paths {
      * @description accessToken 쿠키를 만료시켜 브라우저가 삭제하도록 합니다.
      */
     post: operations["logout"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/auth/login": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * 로그인
+     * @description 일반 로그인 후 토큰을 반환합니다.
+     */
+    post: operations["login"];
     delete?: never;
     options?: never;
     head?: never;
@@ -501,6 +561,16 @@ export interface components {
       description?: string;
       /** Format: int64 */
       parentId?: number;
+    };
+    SignUpRequest: {
+      email: string;
+      password: string;
+      passwordConfirm: string;
+    };
+    LoginRequest: {
+      /** Format: email */
+      email: string;
+      password: string;
     };
     PageResponseStockTransactionResponse: {
       content: components["schemas"]["StockTransactionResponse"][];
@@ -920,6 +990,46 @@ export interface operations {
       };
     };
   };
+  signUp: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["SignUpRequest"];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  refresh: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
   logout: {
     parameters: {
       query?: never;
@@ -928,6 +1038,28 @@ export interface operations {
       cookie?: never;
     };
     requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  login: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["LoginRequest"];
+      };
+    };
     responses: {
       /** @description OK */
       200: {

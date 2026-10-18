@@ -39,6 +39,12 @@ export type Role = "ADMIN" | "STAFF";
 /** GET /api/auth/me — 백엔드가 role을 String으로 내려서 스펙엔 string이라 좁혀둠 */
 export type UserInfo = Omit<Schemas["UserInfo"], "role"> & { role: Role };
 
+/** POST /api/auth/login — 성공 시 accessToken·refreshToken을 HttpOnly 쿠키로 설정 (바디 없음) */
+export type LoginRequest = Schemas["LoginRequest"];
+
+/** POST /api/auth/signup — 성공 시 바디 없음, 자동 로그인 없음 */
+export type SignUpRequest = Schemas["SignUpRequest"];
+
 // ---- 카테고리 ----
 
 export type Category = WithNullable<Schemas["CategoryResponse"], "description" | "parentId">;
@@ -71,7 +77,7 @@ export type StockTransaction = WithNullable<
   | "costPriceSnapshot"
   | "reason"
   | "reversalOfId"
-  | "canceledBy"
+  | "canceledByName"
   | "canceledAt"
   | "consumeType"
 >;

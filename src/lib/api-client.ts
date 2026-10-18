@@ -26,6 +26,8 @@ type ApiOptions = {
   method?: "GET" | "POST" | "PUT" | "DELETE"; // 생략하면 GET
   body?: unknown; // POST/PUT으로 보낼 객체 (JSON으로 변환해서 전송)
   query?: Record<string, QueryValue>; // ?keyword=...&page=0 로 붙일 값들
+  /** 내부용: 401 → refresh 후 재시도는 한 번만 */
+  _retried?: boolean;
 };
 
 /**
@@ -57,6 +59,50 @@ function toQueryString(query?: Record<string, QueryValue>): string {
   return queryString ? `?${queryString}` : "";
 }
 
+/** 동시에 여러 요청이 401을 받아도 refresh는 한 번만 */
+let refreshPromise: Promise<boolean> | null = null;
+
+/**
+ * refreshToken 쿠키로 accessToken 재발급.
+ * 성공하면 true — 호출한 쪽이 원래 요청을 한 번 더 보낸다.
+ */
+async function tryRefresh(): Promise<boolean> {
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = (async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+      });
+      return res.ok;
+    } catch {
+      return false;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
+function redirectToLogin() {
+  const path = window.location.pathname;
+  if (path === "/login" || path === "/signup") return;
+  // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+  window.location.href = "/login";
+}
+
+/** 로그인·회원가입·refresh 자체 요청에서는 401 → refresh 루프를 타지 않음 */
+function shouldAttemptRefresh(path: string): boolean {
+  return (
+    path !== "/api/auth/login" &&
+    path !== "/api/auth/signup" &&
+    path !== "/api/auth/refresh" &&
+    path !== "/api/auth/logout"
+  );
+}
+
 /**
  * @description: API 요청을 보내는 함수 — 모든 백엔드 호출은 이 함수를 거침
  * @param {string} path - 요청할 경로
@@ -69,7 +115,7 @@ function toQueryString(query?: Record<string, QueryValue>): string {
  * apiFetch<StockTransaction>("/api/stock/in", { method: "POST", body: { productId: 1, quantity: 1000, unitPrice: 15 } });
  */
 export async function apiFetch<T>(path: string, options: ApiOptions = {}): Promise<T> {
-  const { method = "GET", body, query } = options;
+  const { method = "GET", body, query, _retried = false } = options;
   const hasBody = body !== undefined;
 
   // ── 1. 요청 보내기 ──
@@ -77,7 +123,7 @@ export async function apiFetch<T>(path: string, options: ApiOptions = {}): Promi
   //        res.ok 체크까지 오지 않음 — TanStack Query가 그대로 에러로 잡아줌)
   const res = await fetch(`${API_URL}${path}${toQueryString(query)}`, {
     method,
-    // 쿠키(HttpOnly accessToken)를 같이 보내라는 설정 — 없으면 백엔드가 항상 401
+    // 쿠키(HttpOnly accessToken / refreshToken)를 같이 보내라는 설정 — 없으면 백엔드가 항상 401
     credentials: "include",
     // body가 있을 때만 JSON 헤더와 바디를 넣음 (GET에 Content-Type을 붙일 이유가 없음)
     ...(hasBody && {
@@ -88,16 +134,16 @@ export async function apiFetch<T>(path: string, options: ApiOptions = {}): Promi
 
   // ── 2. 실패 응답 처리 (res.ok가 false = 상태코드가 200번대가 아님) ──
   if (!res.ok) {
-    // (a) 401 = 로그인 안 됨/토큰 만료 → 로그인 페이지로
-    //     이미 /login이면 이동하지 않음 (무한 이동 방지)
-    //     이동시켜도 페이지가 실제로 넘어가기 전까지 코드는 계속 돎 → 아래 throw까지 반드시 실행돼야
-    //     호출한 쪽이 성공한 줄 알고 진행하지 않음
-    //     useRouter()는 React 컴포넌트 안에서만 쓸 수 있어서 이 일반 함수에선 못 씀.
-    //     또 전체 새로고침으로 이동해야 TanStack Query 캐시(이전 사용자 데이터)까지 깨끗이 비워짐
-    //     → Next 권장 방식 대신 의도적으로 window.location 사용
-    if (res.status === 401 && window.location.pathname !== "/login") {
-      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-      window.location.href = "/login";
+    // (a) 401 = accessToken 만료/없음 → refresh 한 번 시도 후 원래 요청 재시도
+    //     refresh도 실패하면 /login으로 (이미 로그인·가입 페이지면 이동하지 않음)
+    if (res.status === 401 && !_retried && shouldAttemptRefresh(path)) {
+      const refreshed = await tryRefresh();
+      if (refreshed) {
+        return apiFetch<T>(path, { ...options, _retried: true });
+      }
+      redirectToLogin();
+    } else if (res.status === 401) {
+      redirectToLogin();
     }
 
     // (b) 에러 바디를 ApiError로 변환
