@@ -17,14 +17,15 @@ import { operations } from "@/types/api";
 /** 상품 관련 캐시 전체를 가리키는 키 — 나중에 등록·수정 후 invalidateQueries에 사용 */
 export const PRODUCTS_QUERY_KEY = ["products"] as const;
 
-/** GET /api/products — 검색·필터·페이징 */
-export function useProducts(params: ProductSearchParams) {
+/** GET /api/products — 검색·필터·페이징. enabled가 false면 요청하지 않음 (검색창을 열기 전 등) */
+export function useProducts(params: ProductSearchParams, enabled = true) {
   return useQuery({
     queryKey: [...PRODUCTS_QUERY_KEY, "list", params],
     /* apiFetch, 응답 타입 Page<Product>, 두 번째 인자로 { query: params } */
     queryFn: () => apiFetch<Page<Product>>("/api/products", { method: "GET", query: params }),
     //새 데이터가 올 때까지 이전 페이지를 보여줌
     placeholderData: keepPreviousData,
+    enabled,
   });
 }
 

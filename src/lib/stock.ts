@@ -54,6 +54,29 @@ export function signedQuantity(tx: StockTransaction): number {
 }
 
 /**
+ * 거래 한 건의 금액(원). 수량·단가는 둘 다 최소 단위라 화면 단위로 환산하기 전에 곱한다.
+ * - 입고: unitPrice × 수량 = 이번 매입액. unitPrice가 없으면 당시 매입가(costPriceSnapshot)로 계산
+ * - 출고: unitPrice × 수량 = 이번 판매액
+ * - 자체소비: −(costPriceSnapshot × 수량). 재고를 쓴 원가라 음수. 롤백은 되돌리므로 양수
+ * - 재고조정, 단가가 없는 행: null
+ * 입고·출고의 롤백 거래는 그 금액을 되돌리므로 음수
+ */
+export function transactionAmount(tx: StockTransaction): number | null {
+  const rate =
+    tx.type === "IN"
+      ? (tx.unitPrice ?? tx.costPriceSnapshot)
+      : tx.type === "OUT"
+        ? tx.unitPrice
+        : tx.type === "CONSUME"
+          ? tx.costPriceSnapshot
+          : null;
+  if (rate === null) return null;
+  const amount = rate * tx.quantity;
+  if (tx.type === "CONSUME") return isReversal(tx) ? amount : -amount;
+  return isReversal(tx) ? -amount : amount;
+}
+
+/**
  * 롤백 버튼을 보여줄지 — 백엔드 rollback()의 거절 조건과 같은 기준
  * (화면에서 미리 걸러 불필요한 409를 줄이는 것뿐, 최종 판정은 백엔드)
  * - 재고조정 → ROLLBACK_NOT_ALLOWED

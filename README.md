@@ -1,7 +1,7 @@
 # inventory-frontend
 
 재고관리 + 챗봇 프로젝트의 **Next.js 프론트엔드**입니다.  
-Spring Boot 백엔드(`inventory`)의 REST API를 호출하며, Google OAuth 로그인·입출고·손익·RAG 챗봇 패널까지 포함합니다.
+Spring Boot 백엔드(`inventory`)의 REST API를 호출하며, 이메일·Google 로그인·입출고·손익·RAG 챗봇 패널까지 포함합니다.
 
 백엔드와 **별도 레포**로 관리됩니다. 설계·명세는 상위 폴더의 `문서/`를 기준으로 합니다.
 
@@ -55,7 +55,7 @@ npm install
 npm run dev
 ```
 
-브라우저에서 [http://localhost:3000](http://localhost:3000) → `/login`에서 Google 로그인.
+브라우저에서 [http://localhost:3000](http://localhost:3000) → `/login`에서 이메일 또는 Google로 로그인. 계정이 없으면 `/signup`.
 
 | 스크립트 | 설명 |
 |---|---|
@@ -71,13 +71,14 @@ npm run dev
 
 | 경로 | 설명 | 권한 |
 |---|---|---|
-| `/login` | Google OAuth 로그인 | 공개 |
+| `/login` | 이메일·Google 로그인 | 공개 |
+| `/signup` | 이메일 회원가입 | 공개 |
 | `/products` | 상품 목록·검색·필터 | 전체 |
 | `/products/new`, `/products/[id]/edit` | 상품 등록·수정 | ADMIN |
 | `/categories` | 카테고리 트리 관리 | 조회 전체 / 관리 ADMIN |
 | `/stock/register` | 입고·출고·자체소비 | 전체 |
 | `/stock/adjustment` | 재고 조정(실사) | ADMIN |
-| `/transactions`, `/transactions/[id]` | 거래 이력·상세·롤백 | 조회 전체 / 롤백 ADMIN |
+| `/transactions`, `/transactions/[id]` | 거래 이력(상품명 검색)·상세·롤백 | 조회 전체 / 롤백 ADMIN |
 | `/low-stock` | 재고 부족 목록 | 전체 |
 | `/profit-loss` | 손익 조회 | 전체 |
 | (레이아웃) | 오른쪽 아래 챗봇 패널 | 전체 |
@@ -92,7 +93,8 @@ STAFF에게는 ADMIN 전용 메뉴·버튼이 **숨겨집니다**. 최종 권한
 src/
   app/
     (main)/          # 로그인 후 공통 레이아웃 (사이드바 + 챗봇)
-    login/           # 공개 로그인
+    login/           # 공개 로그인 (이메일·Google)
+    signup/          # 공개 회원가입
   components/        # UI·도메인 컴포넌트 (데이터는 props로만)
   hooks/             # TanStack Query 훅
   lib/               # api-client, format, stock, date 등

@@ -1,9 +1,11 @@
 "use client";
 
-import { RotateCcw, X } from "lucide-react";
+import { useState } from "react";
+import { RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/common/native-select";
+import { ProductNameSearch } from "@/components/transaction/product-name-search";
 import { TRANSACTION_STATUS_LABEL, TRANSACTION_TYPE_LABEL } from "@/lib/stock";
 import type { TransactionStatus, TransactionType } from "@/types";
 
@@ -36,6 +38,9 @@ type TransactionFiltersProps = {
  * 기간은 백엔드가 시작·종료를 둘 다 받아야 적용하므로, 하나만 고르면 안내만 표시
  */
 export function TransactionFilters({ value, onChange, productName }: TransactionFiltersProps) {
+  // 초기화 시 검색창 입력·목록 상태를 비우기 위해 검색 컴포넌트를 다시 마운트
+  const [searchKey, setSearchKey] = useState(0);
+
   const set = <K extends keyof TransactionFilterValues>(key: K, v: TransactionFilterValues[K]) =>
     onChange({ ...value, [key]: v });
 
@@ -52,19 +57,12 @@ export function TransactionFilters({ value, onChange, productName }: Transaction
   return (
     <div className="mb-4 grid gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        {value.productId !== null && (
-          <span className="inline-flex h-8 items-center gap-1 rounded-lg border bg-muted/50 pr-1 pl-2.5 text-sm">
-            상품: {productName ?? `#${value.productId}`}
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              onClick={() => set("productId", null)}
-              aria-label="상품 필터 해제"
-            >
-              <X />
-            </Button>
-          </span>
-        )}
+        <ProductNameSearch
+          key={searchKey}
+          productId={value.productId}
+          productName={productName}
+          onSelect={(productId) => set("productId", productId)}
+        />
 
         <NativeSelect
           className="w-32"
@@ -115,7 +113,13 @@ export function TransactionFilters({ value, onChange, productName }: Transaction
         </div>
 
         {isFiltered && (
-          <Button variant="ghost" onClick={() => onChange(EMPTY_TRANSACTION_FILTERS)}>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setSearchKey((key) => key + 1);
+              onChange(EMPTY_TRANSACTION_FILTERS);
+            }}
+          >
             <RotateCcw />
             초기화
           </Button>
