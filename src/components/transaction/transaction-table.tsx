@@ -13,13 +13,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { TransactionStatusBadge, TransactionTypeBadge } from "./transaction-badges";
-import { formatDateTime, formatQuantity, formatUnitPrice } from "@/lib/format";
-import { signedQuantity } from "@/lib/stock";
+import { formatDateTime, formatQuantity, formatWon } from "@/lib/format";
+import { signedQuantity, transactionAmount } from "@/lib/stock";
 import type { StockTransaction } from "@/types";
 
 /**
  * 거래 이력 표 — 데이터는 props로만 받음
  * 수량은 부호 포함(+입고 / −출고·소비 / ±조정, 롤백 거래는 반대 방향)
+ * 금액은 한 건의 매입액·판매액. 자체소비는 원가를 음수로, 재고조정은 없음
  * 취소된 원본 거래는 흐리게 표시
  */
 export function TransactionTable({ transactions }: { transactions: StockTransaction[] }) {
@@ -43,7 +44,7 @@ export function TransactionTable({ transactions }: { transactions: StockTransact
             <TableHead>상품</TableHead>
             <TableHead>유형</TableHead>
             <TableHead className="text-right">수량</TableHead>
-            <TableHead className="text-right">단가</TableHead>
+            <TableHead className="text-right">금액</TableHead>
             <TableHead>상태</TableHead>
             <TableHead>사유</TableHead>
           </TableRow>
@@ -51,6 +52,7 @@ export function TransactionTable({ transactions }: { transactions: StockTransact
         <TableBody>
           {transactions.map((tx) => {
             const qty = signedQuantity(tx);
+            const amount = transactionAmount(tx);
             return (
               <TableRow
                 key={tx.id}
@@ -81,8 +83,13 @@ export function TransactionTable({ transactions }: { transactions: StockTransact
                   {qty > 0 && "+"}
                   {formatQuantity(qty, tx.productUnit)}
                 </TableCell>
-                <TableCell className="text-right whitespace-nowrap text-muted-foreground tabular-nums">
-                  {tx.unitPrice === null ? "-" : formatUnitPrice(tx.unitPrice, tx.productUnit)}
+                <TableCell
+                  className={cn(
+                    "text-right whitespace-nowrap tabular-nums",
+                    amount !== null && amount < 0 && "text-destructive",
+                  )}
+                >
+                  {amount === null ? "-" : formatWon(amount)}
                 </TableCell>
                 <TableCell>
                   <TransactionStatusBadge tx={tx} />

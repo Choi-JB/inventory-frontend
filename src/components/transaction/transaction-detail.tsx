@@ -3,13 +3,14 @@ import Link from "next/link";
 import { Info } from "lucide-react";
 import { cn } from "cn";
 import { TransactionStatusBadge, TransactionTypeBadge } from "./transaction-badges";
-import { formatDateTime, formatQuantity, formatUnitPrice } from "@/lib/format";
-import { CONSUME_TYPE_LABEL, isReversal, signedQuantity } from "@/lib/stock";
+import { formatDateTime, formatQuantity, formatUnitPrice, formatWon } from "@/lib/format";
+import { CONSUME_TYPE_LABEL, isReversal, signedQuantity, transactionAmount } from "@/lib/stock";
 import type { StockTransaction } from "@/types";
 
 /** 거래 상세 카드 — 데이터는 props로만 받음 */
 export function TransactionDetail({ tx }: { tx: StockTransaction }) {
   const qty = signedQuantity(tx);
+  const amount = transactionAmount(tx);
   const unit = tx.productUnit;
 
   return (
@@ -51,6 +52,26 @@ export function TransactionDetail({ tx }: { tx: StockTransaction }) {
               {qty > 0 && "+"}
               {formatQuantity(qty, unit)}
             </span>
+          </Field>
+          <Field
+            label="금액"
+            hint={
+              tx.type === "IN"
+                ? "이번 매입액"
+                : tx.type === "OUT"
+                  ? "이번 판매액"
+                  : tx.type === "CONSUME"
+                    ? "당시 평균 매입가 기준"
+                    : undefined
+            }
+          >
+            {amount === null ? (
+              "-"
+            ) : (
+              <span className={cn("font-medium", amount < 0 && "text-destructive")}>
+                {formatWon(amount)}
+              </span>
+            )}
           </Field>
           {tx.unitPrice !== null && (
             <Field label={tx.type === "IN" ? "매입단가" : "판매단가"}>
