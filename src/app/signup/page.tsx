@@ -1,5 +1,5 @@
+import Link from "next/link";
 import { Boxes } from "lucide-react";
-import { SignupForm } from "@/components/auth/signup-form";
 
 export default function SignupPage() {
   return (
@@ -8,9 +8,15 @@ export default function SignupPage() {
         <div className="mb-6 text-center">
           <Boxes className="mx-auto mb-4 size-10" />
           <h1 className="text-xl font-semibold">Sign Up</h1>
-          <p className="mt-1 text-sm text-muted-foreground">이메일과 비밀번호로 가입해 주세요.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            회원가입은 현재 demo 버전에서는 이용할 수 없습니다.
+          </p>
         </div>
-        <SignupForm />
+        <p className="text-center text-sm text-muted-foreground">
+          <Link href="/login" className="font-medium text-foreground underline-offset-4 hover:underline">
+            로그인으로 돌아가기
+          </Link>
+        </p>
       </div>
     </div>
   );

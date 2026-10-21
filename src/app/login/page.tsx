@@ -15,7 +15,7 @@ function LoginContent() {
         <div className="mb-6 text-center">
           <Boxes className="mx-auto mb-4 size-10" />
           <h1 className="text-xl font-semibold">재고관리</h1>
-          <p className="mt-1 text-sm text-muted-foreground">이메일 또는 Google로 로그인해 주세요.</p>
+          <p className="mt-1 text-sm text-muted-foreground">데모 계정으로 로그인해 주세요.</p>
         </div>
         <LoginForm signupSuccess={signupSuccess} />
       </div>

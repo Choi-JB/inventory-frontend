@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { useLogin } from "@/hooks/use-login";
 import { ApiError } from "@/lib/api-client";
 
-const GOOGLE_LOGIN_URL = `${process.env.NEXT_PUBLIC_API_URL}/oauth2/authorization/google`;
+const DEMO_EMAIL = "staff@inventory.com";
+const DEMO_PASSWORD = "1234";
 
 const loginSchema = z.object({
   email: z
@@ -58,7 +58,7 @@ export function LoginForm({ signupSuccess = false }: { signupSuccess?: boolean }
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { email: DEMO_EMAIL, password: DEMO_PASSWORD },
   });
 
   const onSubmit = (values: LoginFormValues) => {
@@ -81,8 +81,10 @@ export function LoginForm({ signupSuccess = false }: { signupSuccess?: boolean }
           <Input
             id="email"
             type="email"
-            autoComplete="email"
+            autoComplete="username"
+            readOnly
             aria-invalid={!!errors.email}
+            className="bg-muted"
             {...register("email")}
           />
           {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
@@ -92,9 +94,11 @@ export function LoginForm({ signupSuccess = false }: { signupSuccess?: boolean }
           <Label htmlFor="password">비밀번호</Label>
           <Input
             id="password"
-            type="password"
-            autoComplete="current-password"
+            type="text"
+            autoComplete="off"
+            readOnly
             aria-invalid={!!errors.password}
+            className="bg-muted"
             {...register("password")}
           />
           {errors.password && (
@@ -114,19 +118,20 @@ export function LoginForm({ signupSuccess = false }: { signupSuccess?: boolean }
         <div className="absolute inset-x-0 top-1/2 border-t" />
       </div>
 
-      <a
-        href={GOOGLE_LOGIN_URL}
-        className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-md border border-black/20 bg-[#24292F] px-4 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-colors hover:bg-[#1b1f23] focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:translate-y-px"
+      <button
+        type="button"
+        disabled
+        className="inline-flex h-9 w-full cursor-not-allowed items-center justify-center gap-2 rounded-md border border-black/20 bg-[#24292F] px-4 text-sm font-semibold text-white opacity-50"
       >
         <GoogleMark />
         Google로 로그인
-      </a>
+      </button>
 
       <p className="text-center text-sm text-muted-foreground">
-        계정이 없으신가요?{" "}
-        <Link href="/signup" className="font-medium text-foreground underline-offset-4 hover:underline">
-          Sign Up
-        </Link>
+        계정이 없으신가요? <span className="font-medium text-foreground">Sign Up</span>
+      </p>
+      <p className="text-center text-xs text-muted-foreground">
+        Google 로그인과 회원가입은 현재 demo 버전에서는 이용할 수 없습니다.
       </p>
     </div>
   );
