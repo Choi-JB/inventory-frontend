@@ -1,9 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import { BookOpen, CircleAlert, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ChatText } from "./chat-text";
 import type { ChatItem } from "@/lib/chat";
+
+/** public/manuals 파일명만 허용 — 응답의 source로 다른 경로를 열지 않게 */
+function manualUrl(source: string): string | null {
+  if (!/^[\w.-]+\.md$/.test(source)) return null;
+  return `/manuals/${source}`;
+}
 
 type ChatMessageProps = {
   item: ChatItem;
@@ -15,6 +28,25 @@ type ChatMessageProps = {
 
 /** 대화 한 건 — 내 질문은 오른쪽, 답변은 왼쪽 */
 export function ChatMessage({ item, onRetry, disabled = false }: ChatMessageProps) {
+  const [manual, setManual] = useState<{ title: string; body: string } | null>(null);
+
+  // 데모 확인용 — 검색된 매뉴얼 파일을 팝업에 원문 그대로 보여 줌
+  const openManual = (source: string, section: string) => {
+    const title = `${section} · ${source}`;
+    setManual({ title, body: "불러오는 중…" });
+    const url = manualUrl(source);
+    if (!url) {
+      setManual({ title, body: "이 문서를 찾을 수 없습니다." });
+      return;
+    }
+    const show = (body: string) =>
+      setManual((current) => (current?.title === title ? { title, body } : current));
+    fetch(url)
+      .then((res) => (res.ok ? res.text() : Promise.reject()))
+      .then(show)
+      .catch(() => show("이 문서를 찾을 수 없습니다."));
+  };
+
   if (item.role === "user") {
     return (
       <div className="flex flex-col items-end gap-1">
@@ -59,12 +91,28 @@ export function ChatMessage({ item, onRetry, disabled = false }: ChatMessageProp
           <ul className="space-y-0.5 pl-4.5">
             {item.sources.map((s) => (
               <li key={`${s.source}-${s.section}`}>
-                {s.section} <span className="opacity-70">· {s.source}</span>
+                <button
+                  type="button"
+                  className="text-left underline-offset-2 hover:underline"
+                  onClick={() => openManual(s.source, s.section)}
+                >
+                  {s.section} <span className="opacity-70">· {s.source}</span>
+                </button>
               </li>
             ))}
           </ul>
         </div>
       )}
+      <Dialog open={manual !== null} onOpenChange={(open) => !open && setManual(null)}>
+        <DialogContent className="z-[60] sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="pr-6">{manual?.title}</DialogTitle>
+          </DialogHeader>
+          <pre className="max-h-[70vh] overflow-y-auto font-sans text-xs leading-relaxed whitespace-pre-wrap">
+            {manual?.body}
+          </pre>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
