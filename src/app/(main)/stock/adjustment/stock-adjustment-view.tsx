@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/common/error-state";
 import { ProductPicker } from "@/components/stock/product-picker";
 import { AdjustmentForm, type AdjustmentFormValues } from "@/components/stock/adjustment-form";
+import { shouldReuseIdempotencyKey, useIdempotencyKey } from "@/hooks/use-idempotency-key";
 import { useMe } from "@/hooks/use-me";
 import { useProduct, useProducts } from "@/hooks/use-products";
 import type { Product, StockAdjustmentRequest } from "@/types";
@@ -48,6 +49,7 @@ export function StockAdjustmentView() {
 
   // ── 재고조정 등록 ──
   const stockAdjustment = useStockAdjustment();
+  const idempotency = useIdempotencyKey();
 
   const onSuccess = () => {
     setNotice(`재고조정 완료`);
@@ -63,14 +65,26 @@ export function StockAdjustmentView() {
 
   const handleSubmit = (values: AdjustmentFormValues) => {
     if (!product) return;
-    //   1. StockAdjustmentRequest 만들기
-    const body: StockAdjustmentRequest = {
+    // 키를 뺀 본문이 같으면 같은 요청키. 성공하면 그 키를 버린다.
+    const payload = {
       productId: product.id,
-      //(조정 수량 ±는 서버가 actualQuantity − currentStock으로 계산 → 보내지 않음)
+      // 조정 수량 ±는 서버가 actualQuantity − currentStock으로 계산 → 보내지 않음
       actualQuantity: toBaseQuantity(values.actualQuantity, values.quantityUnit)!,
       reason: values.reason,
     };
-    stockAdjustment.mutate(body, { onSuccess });
+    const body: StockAdjustmentRequest = {
+      ...payload,
+      idempotencyKey: idempotency.keyFor(payload),
+    };
+    stockAdjustment.mutate(body, {
+      onSuccess: () => {
+        idempotency.finish(payload);
+        onSuccess();
+      },
+      onError: (error) => {
+        if (!shouldReuseIdempotencyKey(error)) idempotency.finish(payload);
+      },
+    });
   };
 
   // 메뉴는 AdminOnly로 숨겼지만 주소 직접 입력 대비 (실제 차단은 백엔드 403)

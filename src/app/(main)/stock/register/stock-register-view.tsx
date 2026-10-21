@@ -17,6 +17,7 @@ import {
   StockTransactionForm,
   type StockFormValues,
 } from "@/components/stock/stock-transaction-form";
+import { shouldReuseIdempotencyKey, useIdempotencyKey } from "@/hooks/use-idempotency-key";
 import { useProduct, useProducts } from "@/hooks/use-products";
 import { TRANSACTION_TYPE_LABEL, type RegisterType } from "@/lib/stock";
 import { toBasePrice, toBaseQuantity } from "@/lib/units";
@@ -58,6 +59,7 @@ export function StockRegisterView() {
   const stockIn = useStockIn();
   const stockOut = useStockOut();
   const stockConsume = useStockConsume();
+  const idempotency = useIdempotencyKey();
 
   // 지금 탭의 mutation 상태
   const current = { IN: stockIn, OUT: stockOut, CONSUME: stockConsume }[type];
@@ -82,31 +84,47 @@ export function StockRegisterView() {
     //   1. 수량 환산: toBaseQuantity(values.quantity, values.quantityUnit)  (1.5kg → 1500)
     const quantity = toBaseQuantity(values.quantity, values.quantityUnit);
     const reason = values.reason || undefined;
+    // 키를 뺀 본문이 같으면 같은 요청키. 성공하면 그 키를 버린다.
+    const settle = (payload: unknown) => ({
+      onSuccess: () => {
+        idempotency.finish(payload);
+        onSuccess();
+      },
+      onError: (error: unknown) => {
+        if (!shouldReuseIdempotencyKey(error)) idempotency.finish(payload);
+      },
+    });
     //  2. type에 따라 요청 바디를 만들고 해당 mutation 호출
     if (type === "IN") {
-      const body: StockInRequest = {
+      const payload = {
         productId: product.id,
         quantity: quantity ?? 0,
         unitPrice: toBasePrice(values.unitPrice!, product.unit),
         reason,
       };
-      stockIn.mutate(body, { onSuccess });
+      const body: StockInRequest = { ...payload, idempotencyKey: idempotency.keyFor(payload) };
+      stockIn.mutate(body, settle(payload));
     } else if (type === "OUT") {
-      const body: StockOutRequest = {
+      const payload = {
         productId: product.id,
         quantity: quantity ?? 0,
         unitPrice: values.unitPrice ? toBasePrice(values.unitPrice, product.unit) : undefined,
         reason,
       };
-      stockOut.mutate(body, { onSuccess });
+      const body: StockOutRequest = { ...payload, idempotencyKey: idempotency.keyFor(payload) };
+      stockOut.mutate(body, settle(payload));
     } else if (type === "CONSUME") {
-      const body: StockConsumeRequest = {
+      const payload = {
         productId: product.id,
         quantity: quantity ?? 0,
         consumeType: values.consumeType,
         reason,
       };
-      stockConsume.mutate(body, { onSuccess });
+      const body: StockConsumeRequest = {
+        ...payload,
+        idempotencyKey: idempotency.keyFor(payload),
+      };
+      stockConsume.mutate(body, settle(payload));
     }
   };
 
