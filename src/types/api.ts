@@ -504,6 +504,7 @@ export interface components {
       quantity: number;
       unitPrice?: number;
       reason?: string;
+      idempotencyKey: string;
     };
     StockInRequest: {
       /** Format: int64 */
@@ -512,6 +513,7 @@ export interface components {
       quantity: number;
       unitPrice: number;
       reason?: string;
+      idempotencyKey: string;
     };
     StockConsumeRequest: {
       /** Format: int64 */
@@ -521,6 +523,7 @@ export interface components {
       reason?: string;
       /** @enum {string} */
       consumeType: "DISCARD" | "INTERNAL_USE" | "SAMPLE";
+      idempotencyKey: string;
     };
     StockAdjustmentRequest: {
       /** Format: int64 */
@@ -528,6 +531,7 @@ export interface components {
       /** Format: int32 */
       actualQuantity: number;
       reason: string;
+      idempotencyKey: string;
     };
     ProductCreateRequest: {
       name: string;
