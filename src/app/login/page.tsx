@@ -1,13 +1,32 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Boxes } from "lucide-react";
 import { LoginForm } from "@/components/auth/login-form";
+import { useMe } from "@/hooks/use-me";
 
 function LoginContent() {
+  const me = useMe();
   const searchParams = useSearchParams();
   const signupSuccess = searchParams.get("signup") === "1";
+
+  // 쿠키가 있으면 로그인 폼을 보여 주지 않고 상품 화면으로 교체
+  useEffect(() => {
+    if (!me.data) return;
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.replace("/products");
+  }, [me.data]);
+
+  if (me.isPending || me.data) {
+    return (
+      <div className="flex flex-1 items-center justify-center bg-muted/30 p-6">
+        <p className="text-sm text-muted-foreground">
+          {me.data ? "이동 중..." : "로그인 확인 중..."}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-1 items-center justify-center bg-muted/30 p-6">
