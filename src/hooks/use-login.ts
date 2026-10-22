@@ -8,8 +8,9 @@ export function useLogin() {
     mutationFn: (body: LoginRequest) =>
       apiFetch<void>("/api/auth/login", { method: "POST", body }),
     onSuccess: () => {
+      // replace: 히스토리의 /login을 지워서 뒤로가기가 로그인 화면으로 돌아가지 않게 함
       // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-      window.location.href = "/products";
+      window.location.replace("/products");
     },
   });
 }

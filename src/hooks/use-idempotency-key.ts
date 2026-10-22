@@ -20,6 +20,7 @@ export function useIdempotencyKey() {
     return key;
   };
 
+  // 요청이 끝났을 때 키를 삭제하는 함수
   const finish = (payload: unknown) => {
     keys.current.delete(JSON.stringify(payload));
   };
@@ -31,6 +32,7 @@ export function useIdempotencyKey() {
  * 실패한 요청의 키를 다음 제출에 그대로 쓸지.
  * 응답이 없거나 5xx, 저장 전에 거절된 4xx(재고 부족 409 포함)는 유지한다.
  * 그 외 409는 이미 끝난 키일 수 있어 버린다.
+ * true면 키를 유지하고, false면 키를 버린다.
  */
 export function shouldReuseIdempotencyKey(error: unknown): boolean {
   if (!(error instanceof ApiError)) return true;
